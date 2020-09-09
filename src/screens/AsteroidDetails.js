@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 import SpinnerView from '../components/SpinnerView.js';
 import {asteroidDetailsCall} from '../actions/asteroid.details.actions.js';
@@ -15,13 +15,26 @@ const AsteroidDetails = (props) => {
 
   const asteroidId = route.params.asteroidId;
 
+  const [errorMessage, setErrorMessage] = useState(undefined);
+
   useEffect(() => {
     asteroidDetailsCall(asteroidId);
   }, []);
 
+  useEffect(() => {
+    let timeout = setTimeout(() => {
+      if (!asteroidDetails) {
+        setErrorMessage('Please check entered asteroid ID');
+      }
+    }, 5000);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
+
   return (
     <View style={styles.container}>
-      {showSpinner ? <SpinnerView /> : null}
+      {showSpinner && !errorMessage ? <SpinnerView /> : null}
       {asteroidDetails ? (
         <View>
           <View style={styles.row}>
@@ -42,9 +55,9 @@ const AsteroidDetails = (props) => {
           </View>
         </View>
       ) : null}
-      {error ? (
+      {error || errorMessage ? (
         <View style={{flexWrap: 'wrap'}}>
-          <Text style={styles.heading}>{error}</Text>
+          <Text style={styles.heading}>{errorMessage}</Text>
         </View>
       ) : null}
     </View>
